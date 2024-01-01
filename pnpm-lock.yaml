@@ -6,6 +6,7 @@ importers:
     specifiers:
       '@commitlint/cli': ^18.4.3
       '@commitlint/config-conventional': ^18.4.3
+      '@rollup/plugin-alias': ^5.1.0
       '@rollup/plugin-commonjs': ^25.0.7
       '@rollup/plugin-replace': ^5.0.5
       '@typescript-eslint/eslint-plugin': ^6.16.0
@@ -26,6 +27,7 @@ importers:
     devDependencies:
       '@commitlint/cli': registry.npmmirror.com/@commitlint/cli/18.4.3_typescript@5.3.3
       '@commitlint/config-conventional': registry.npmmirror.com/@commitlint/config-conventional/18.4.3
+      '@rollup/plugin-alias': registry.npmmirror.com/@rollup/plugin-alias/5.1.0_rollup@4.9.1
       '@rollup/plugin-commonjs': registry.npmmirror.com/@rollup/plugin-commonjs/25.0.7_rollup@4.9.1
       '@typescript-eslint/eslint-plugin': registry.npmmirror.com/@typescript-eslint/eslint-plugin/6.16.0_0e591ad7445c6f6a78ccd954af614b51
       '@typescript-eslint/parser': registry.npmmirror.com/@typescript-eslint/parser/6.16.0_eslint@8.56.0+typescript@5.3.3
@@ -410,6 +412,22 @@ packages:
     name: '@pkgr/core'
     version: 0.1.0
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
+    dev: true
+
+  registry.npmmirror.com/@rollup/plugin-alias/5.1.0_rollup@4.9.1:
+    resolution: {integrity: sha512-lpA3RZ9PdIG7qqhEfv79tBffNaoDuukFDrmhLqg9ifv99u/ehn+lOg30x2zmhf8AQqQUZaMk/B9fZraQ6/acDQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@rollup/plugin-alias/-/plugin-alias-5.1.0.tgz}
+    id: registry.npmmirror.com/@rollup/plugin-alias/5.1.0
+    name: '@rollup/plugin-alias'
+    version: 5.1.0
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+    dependencies:
+      rollup: registry.npmmirror.com/rollup/4.9.1
+      slash: registry.npmmirror.com/slash/4.0.0
     dev: true
 
   registry.npmmirror.com/@rollup/plugin-commonjs/25.0.7_rollup@4.9.1:
@@ -2803,6 +2821,13 @@ packages:
     name: slash
     version: 3.0.0
     engines: {node: '>=8'}
+    dev: true
+
+  registry.npmmirror.com/slash/4.0.0:
+    resolution: {integrity: sha512-3dOsAHXXUkQTpOYcoAxLIorMTp4gIQr5IW3iVb7A7lFIp0VHhnynm9izx6TssdrIcVIESAlVjtnO2K8bg+Coew==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/slash/-/slash-4.0.0.tgz}
+    name: slash
+    version: 4.0.0
+    engines: {node: '>=12'}
     dev: true
 
   registry.npmmirror.com/sort-keys/2.0.0:

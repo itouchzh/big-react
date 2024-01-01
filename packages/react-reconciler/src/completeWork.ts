@@ -1,4 +1,5 @@
 import {
+	Container,
 	appentInitialChild,
 	createInstance,
 	createTextInstance
@@ -49,7 +50,7 @@ export const completeWork = (wip: FiberNode) => {
 	}
 }
 
-function appendAllChildren(parent: FiberNode, wip: FiberNode) {
+function appendAllChildren(parent: Container, wip: FiberNode) {
 	let node = wip.child
 	// 递归查找，先向下，再向上
 	while (node !== null) {
