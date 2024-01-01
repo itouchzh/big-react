@@ -5,7 +5,7 @@ import {
 	createTextInstance
 } from 'hostConfig'
 import { FiberNode } from './fiber'
-import { HostComponent, HostRoot, HostText } from './workTag'
+import { FunctionComponent, HostComponent, HostRoot, HostText } from './workTag'
 import { NoFlags } from './fiberFlags'
 
 // 递归的归
@@ -19,7 +19,6 @@ export const completeWork = (wip: FiberNode) => {
 			return null
 		case HostComponent:
 			// 构建一棵离屏dom树
-
 			if (current !== null && wip.stateNode) {
 				// update
 			} else {
@@ -40,6 +39,10 @@ export const completeWork = (wip: FiberNode) => {
 				const instance = createTextInstance(newProps.content)
 				wip.stateNode = instance
 			}
+			bubbleProperties(wip)
+			return null
+
+		case FunctionComponent:
 			bubbleProperties(wip)
 			return null
 		default:

@@ -6,11 +6,14 @@ export const createInstance = (type: string, props: any): Instance => {
 	return element
 }
 
-export const appentInitialChild = (parent:Instance | Container, child :Instance) => {
+export const appentInitialChild = (
+	parent: Instance | Container,
+	child: Instance
+) => {
 	parent.appendChild(child)
 }
 
-export const createTextInstance = (content:string) => {
+export const createTextInstance = (content: string) => {
 	return document.createTextNode(content)
 }
 

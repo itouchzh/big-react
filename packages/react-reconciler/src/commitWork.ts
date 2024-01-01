@@ -59,7 +59,7 @@ const commitMutationEffectsOnFiber = (finishedWork: FiberNode) => {
 
 const commitPlacement = (finishedWork: FiberNode) => {
 	if (__DEV__) {
-		console.log('commitPlacement')
+		console.warn('执行Placement操作')
 	}
 	// parent dom
 	const hostParent = getHostParent(finishedWork)
@@ -95,7 +95,7 @@ function appendPlacementNodeIntoContainer(
 	hostParent: Container
 ) {
 	if (__DEV__) {
-		console.log('appendPlacementNodeIntoContainer')
+		console.warn('appendPlacementNodeIntoContainer')
 	}
 
 	if (finishedWork.tag === HostComponent || finishedWork.tag === HostText) {

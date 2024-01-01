@@ -3,7 +3,7 @@
 import {
 	createContainer,
 	updateContainer
-} from 'react-reconciler/src/fiberReconciler'
+} from '../../react-reconciler/src/fiberReconciler'
 import { Container } from './hostConfig'
 import { ReactElementType } from 'shared/ReactType'
 
@@ -12,7 +12,7 @@ export function createRoot(container: Container) {
 
 	return {
 		render(element: ReactElementType) {
-			updateContainer(element, root)
+			return updateContainer(element, root)
 		}
 	}
 }

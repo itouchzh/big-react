@@ -2,7 +2,7 @@ import { ReactElementType } from 'shared/ReactType'
 import { FiberNode, creasteFiberFromElement } from './fiber'
 import { HostText } from './workTag'
 import { Placement } from './fiberFlags'
-import { REACT_ELEMENT_TYPE } from 'shared/ReactSymbols'
+import { REACT_ELEMENT_TYPE } from '../../shared/ReactSymbols'
 
 /**
  *

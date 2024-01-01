@@ -3,8 +3,9 @@
 import { ReactElementType } from 'shared/ReactType'
 import { FiberNode } from './fiber'
 import { UpdateQueue, processUpdateQueue } from './updateQueue'
-import { HostComponent, HostRoot, HostText } from './workTag'
+import { FunctionComponent, HostComponent, HostRoot, HostText } from './workTag'
 import { mountChildFibers, reconcileChildFibers } from './childFibers'
+import { renderWithHooks } from './fiberHooks'
 
 // 递归的递 阶段
 export const beginWork = (wip: FiberNode) => {
@@ -17,6 +18,10 @@ export const beginWork = (wip: FiberNode) => {
 			return updateHostComponent(wip)
 		case HostText:
 			return null
+
+		case FunctionComponent:
+			return updateFunctionComponent(wip)
+
 		default:
 			if (__DEV__) {
 				console.warn('beginWork未实现', wip)
@@ -24,6 +29,13 @@ export const beginWork = (wip: FiberNode) => {
 			break
 	}
 	return null
+}
+
+function updateFunctionComponent(wip: FiberNode) {
+	const nextChildren = renderWithHooks(wip)
+
+	reconileChildren(wip, nextChildren)
+	return wip.child
 }
 
 function updateHostRoot(wip: FiberNode) {

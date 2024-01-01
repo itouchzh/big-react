@@ -1,3 +1,4 @@
+import { Dispatch } from 'react/src/currentDispatcher'
 import { Action } from 'shared/ReactType'
 
 // react 有两种更新方法，第一种是this.setState() 第二种是this.setState((prevState)=>newState)
@@ -9,6 +10,8 @@ export interface UpdateQueue<State> {
 	shared: {
 		pending: Update<State> | null
 	}
+
+	dispatch: Dispatch<State> | null
 }
 /**
  * @description 创建update， 接受一个action
@@ -24,7 +27,8 @@ export const createUpdateQueue = <State>(): UpdateQueue<State> => {
 	return {
 		shared: {
 			pending: null
-		}
+		},
+		dispatch: null
 	} as UpdateQueue<State>
 }
 
