@@ -22,7 +22,7 @@ export class FiberNode {
 	// 代表子树中包含的flags
 	subtreeFlags: Flags
 
-	deletions:FiberNode[] | null
+	deletions: FiberNode[] | null
 
 	constructor(tag: WorkTag, pendingProps: Props, key: Key) {
 		this.tag = tag

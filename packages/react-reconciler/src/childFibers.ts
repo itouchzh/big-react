@@ -28,8 +28,6 @@ export function ChildReconciler(shouldTrackEffects: boolean) {
 		}
 	}
 
-	
-
 	function reconcileSingleElement(
 		returnFiber: FiberNode,
 		currentFiber: FiberNode | null,
@@ -65,10 +63,6 @@ export function ChildReconciler(shouldTrackEffects: boolean) {
 		fiber.return = returnFiber
 		return fiber
 	}
-
-	
-
-
 
 	function reconcilerSingleTextNode(
 		returnFiber: FiberNode,
@@ -136,11 +130,7 @@ export function ChildReconciler(shouldTrackEffects: boolean) {
 		}
 		return null
 	}
-
 }
-
-
-
 
 function useFiber(fiber: FiberNode, pendingProps: Props): FiberNode {
 	const clone = createWorkInProgress(fiber, pendingProps)

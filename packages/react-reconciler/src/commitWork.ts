@@ -96,7 +96,6 @@ function commitDeletion(childToDelete: FiberNode) {
 				if (__DEV__) {
 					console.warn('未处理unmount类型', unmountFiber)
 				}
-
 		}
 	})
 	// 移除rootHostNode dom

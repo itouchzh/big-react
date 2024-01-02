@@ -3,8 +3,7 @@ import ReactDOM from 'react-dom/client'
 
 function App() {
 	const [count, setCount] = useState(100)
-	window.setCount = setCount
-	return count === 3 ? <Child /> : <div>{count}</div>
+	return <div onClick={() => setCount(count + 1)}>{count}</div>
 }
 
 function Child() {
