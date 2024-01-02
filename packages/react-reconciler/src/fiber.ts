@@ -22,6 +22,8 @@ export class FiberNode {
 	// 代表子树中包含的flags
 	subtreeFlags: Flags
 
+	deletions:FiberNode[] | null
+
 	constructor(tag: WorkTag, pendingProps: Props, key: Key) {
 		this.tag = tag
 		this.key = key
@@ -51,6 +53,7 @@ export class FiberNode {
 		// 副作用
 		this.flags = NoFlags
 		this.subtreeFlags = NoFlags
+		this.deletions = null
 	}
 }
 
@@ -88,6 +91,7 @@ export const createWorkInProgress = (
 		wip.pendingProps = pendingProps
 		wip.flags = NoFlags
 		wip.subtreeFlags = NoFlags
+		wip.deletions = null
 	}
 	wip.type = current.type
 	wip.updateQueue = current.updateQueue
@@ -98,7 +102,7 @@ export const createWorkInProgress = (
 	return wip
 }
 
-export function creasteFiberFromElement(element: ReactElementType) {
+export function createFiberFromElement(element: ReactElementType) {
 	const { type, key, props } = element
 	let fiberTag: WorkTag = FunctionComponent
 

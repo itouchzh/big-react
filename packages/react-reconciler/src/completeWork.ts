@@ -1,12 +1,17 @@
 import {
 	Container,
-	appentInitialChild,
+	appendInitialChild,
 	createInstance,
 	createTextInstance
 } from 'hostConfig'
 import { FiberNode } from './fiber'
 import { FunctionComponent, HostComponent, HostRoot, HostText } from './workTag'
-import { NoFlags } from './fiberFlags'
+import { NoFlags, Update } from './fiberFlags'
+
+// 标记更新
+function markUpdate(fiber: FiberNode) {
+	fiber.flags |= Update
+}
 
 // 递归的归
 export const completeWork = (wip: FiberNode) => {
@@ -21,9 +26,11 @@ export const completeWork = (wip: FiberNode) => {
 			// 构建一棵离屏dom树
 			if (current !== null && wip.stateNode) {
 				// update
+
+
 			} else {
 				// 1. 构建dom树
-				const instance = createInstance(wip.type, newProps)
+				const instance = createInstance(wip.type)
 				// 2. 将dom插入dom树
 				appendAllChildren(instance, wip)
 
@@ -35,6 +42,11 @@ export const completeWork = (wip: FiberNode) => {
 		case HostText:
 			if (current !== null && wip.stateNode) {
 				// update
+				const oldText = current.memoizedProps.content;
+				const newText = newProps.content;
+				if (oldText !== newText) {
+					markUpdate(wip);
+				}
 			} else {
 				const instance = createTextInstance(newProps.content)
 				wip.stateNode = instance
@@ -58,7 +70,7 @@ function appendAllChildren(parent: Container, wip: FiberNode) {
 	// 递归查找，先向下，再向上
 	while (node !== null) {
 		if (node?.tag === HostComponent || node?.tag === HostText) {
-			appentInitialChild(parent, node?.stateNode)
+			appendInitialChild(parent, node?.stateNode)
 		} else if (node.child !== null) {
 			node.child.return = node
 			node = node.child

@@ -5,7 +5,8 @@ import {
 	UpdateQueue,
 	createUpdate,
 	createUpdateQueue,
-	enqueueUpdate
+	enqueueUpdate,
+	processUpdateQueue
 } from './updateQueue'
 import { Action } from 'shared/ReactType'
 import { scheduleUpdateOnFiber } from './workLoop'
@@ -14,6 +15,7 @@ let currentlyRenderingFibger: FiberNode | null = null
 
 // 当前正在处理的hook
 let workInProgressHook: Hook | null = null
+let currentHook: Hook | null = null
 
 const { currentDispatcher } = internals
 
@@ -31,6 +33,7 @@ export function renderWithHooks(wip: FiberNode) {
 
 	if (current !== null) {
 		// update
+		currentDispatcher.current = HooksDispatcherOnUpdate
 	} else {
 		// mount
 		currentDispatcher.current = HooksDispatcherOnMount
@@ -41,6 +44,8 @@ export function renderWithHooks(wip: FiberNode) {
 	const children = Component(props)
 	// 重置
 	currentlyRenderingFibger = null
+	workInProgressHook = null
+	currentHook = null
 	return children
 }
 
@@ -69,6 +74,67 @@ function mountState<State>(
 	queue.dispatch = dispatch
 
 	return [memoizedState, dispatch]
+}
+
+const HooksDispatcherOnUpdate: Dispatcher = {
+	useState: updateState
+}
+
+function updateState<State>(): [State, Dispatch<State>] {
+	// 找到当前useState对应的hook数据
+	const hook = updateWorkInProgresHook()
+	// 计算新的state
+	const queue = hook.updateQueue as UpdateQueue<State>
+	const pending = queue.shared.pending
+	if (pending !== null) {
+		const { memoizedState } = processUpdateQueue(hook.memoizedState, pending)
+		hook.memoizedState = memoizedState
+	}
+	return [hook.memoizedState, queue.dispatch as Dispatch<State>]
+}
+
+function updateWorkInProgresHook(): Hook {
+	let nextCurrentHook: Hook | null = null
+	if (currentHook === null) {
+		// FC update时候的第一个hook
+		const current = currentlyRenderingFibger?.alternate
+		if (current !== null) {
+			nextCurrentHook = current?.memoizedState
+		} else {
+			nextCurrentHook = null
+		}
+	} else {
+		// FC update后续的hook
+		nextCurrentHook = currentHook.next
+	}
+	if (nextCurrentHook === null) {
+		throw new Error(
+			`组件${currentlyRenderingFibger?.type}本次执行的hook比上次多`
+		)
+	}
+	currentHook = nextCurrentHook as Hook
+	const newHook: Hook = {
+		memoizedState: currentHook.memoizedState,
+		updateQueue: currentHook.updateQueue,
+		next: null
+	}
+
+	if (workInProgressHook === null) {
+		// mount 时候，第一个hook
+		if (currentlyRenderingFibger === null) {
+			throw new Error(
+				'Hooks can only be called inside the body of a function component.'
+			)
+		} else {
+			workInProgressHook = newHook
+			currentlyRenderingFibger.memoizedState = workInProgressHook
+		}
+	} else {
+		// mount时候后续的hook
+		workInProgressHook.next = newHook
+		workInProgressHook = newHook
+	}
+	return workInProgressHook
 }
 
 function dispatchSetState<State>(
