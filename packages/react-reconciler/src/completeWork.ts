@@ -33,7 +33,7 @@ export const completeWork = (wip: FiberNode) => {
 			} else {
 				// mount
 				// 1. 构建dom树
-				const instance = createInstance(wip.type,newProps)
+				const instance = createInstance(wip.type, newProps)
 				// 2. 将dom插入dom树
 				appendAllChildren(instance, wip)
 
