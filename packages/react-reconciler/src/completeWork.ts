@@ -66,7 +66,7 @@ export const completeWork = (wip: FiberNode) => {
 			return null
 		default:
 			if (__DEV__) {
-				console.warn('未处理的completeWork情况', wip);
+				console.warn('未处理的completeWork情况', wip)
 			}
 			break
 	}

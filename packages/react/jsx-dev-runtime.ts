@@ -1,2 +1,1 @@
-export { jsxDEV } from './src/jsx'
-export {Fragment} from './src/jsx'
+export { jsxDEV,Fragment } from './src/jsx'

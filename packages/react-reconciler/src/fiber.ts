@@ -2,6 +2,7 @@ import { Key, Props, ReactElementType, Ref } from 'shared/ReactType'
 import { Fragment, FunctionComponent, HostComponent, WorkTag } from './workTag'
 import { Flags, NoFlags } from './fiberFlags'
 import { Container } from 'hostConfig'
+import { Lane, Lanes, NoLane, NoLanes } from './fiberLanes'
 export class FiberNode {
 	// 作为静态数据结构的属性
 	// 对于 FunctionComponent，指函数本身，对于ClassComponent，指class，对于HostComponent，指DOM节点tagName
@@ -70,13 +71,18 @@ export class FiberRootNode {
 	container: Container
 	current: FiberNode
 	// 递归完成以后的hostRootFiber
-	finishedWork: FiberNode | null
+	finishedWork: FiberNode | null;
+
+	pendingLanes: Lanes;
+	finishedLane:Lane
 
 	constructor(container: Container, hostRootFiber: FiberNode) {
 		this.container = container
 		this.current = hostRootFiber
 		hostRootFiber.stateNode = this
 		this.finishedWork = null
+		this.pendingLanes = NoLanes
+		this.finishedLane = NoLane
 	}
 }
 

@@ -332,15 +332,15 @@ function updateFragment(
 	key: Key,
 	existingChildren: ExistingChildren
 ) {
-	let fiber;
+	let fiber
 	if (!current || current.tag !== Fragment) {
-		fiber = createFiberFromFragment(elements, key);
+		fiber = createFiberFromFragment(elements, key)
 	} else {
-		existingChildren.delete(key);
-		fiber = useFiber(current, elements);
+		existingChildren.delete(key)
+		fiber = useFiber(current, elements)
 	}
-	fiber.return = returnFiber;
-	return fiber;
+	fiber.return = returnFiber
+	return fiber
 }
 
 export const reconcileChildFibers = ChildReconciler(true)
