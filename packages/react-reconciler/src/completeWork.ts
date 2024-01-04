@@ -5,7 +5,13 @@ import {
 	createTextInstance
 } from 'hostConfig'
 import { FiberNode } from './fiber'
-import { FunctionComponent, HostComponent, HostRoot, HostText } from './workTag'
+import {
+	Fragment,
+	FunctionComponent,
+	HostComponent,
+	HostRoot,
+	HostText
+} from './workTag'
 import { NoFlags, Update } from './fiberFlags'
 import { updateFiberProps } from 'react-dom/src/SyntheticEvent'
 
@@ -20,9 +26,6 @@ export const completeWork = (wip: FiberNode) => {
 	const current = wip.alternate
 
 	switch (wip.tag) {
-		case HostRoot:
-			bubbleProperties(wip)
-			return null
 		case HostComponent:
 			// 构建一棵离屏dom树
 			if (current !== null && wip.stateNode) {
@@ -56,13 +59,14 @@ export const completeWork = (wip: FiberNode) => {
 			}
 			bubbleProperties(wip)
 			return null
-
+		case HostRoot:
 		case FunctionComponent:
+		case Fragment:
 			bubbleProperties(wip)
 			return null
 		default:
 			if (__DEV__) {
-				console.warn('未处理completeWork', wip.tag)
+				console.warn('未处理的completeWork情况', wip);
 			}
 			break
 	}

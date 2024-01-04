@@ -1,32 +1,39 @@
 import { Key, Props, ReactElementType, Ref } from 'shared/ReactType'
-import { FunctionComponent, HostComponent, WorkTag } from './workTag'
+import { Fragment, FunctionComponent, HostComponent, WorkTag } from './workTag'
 import { Flags, NoFlags } from './fiberFlags'
 import { Container } from 'hostConfig'
 export class FiberNode {
+	// 作为静态数据结构的属性
+	// 对于 FunctionComponent，指函数本身，对于ClassComponent，指class，对于HostComponent，指DOM节点tagName
 	type: any
 	tag: WorkTag
 	key: Key
+	// Fiber对应的真实DOM节点
 	stateNode: any
+
+	// 用于连接其他Fiber节点形成Fiber树
 	return: FiberNode | null
+	// 指向右边第一个兄弟Fiber节点
 	sibling: FiberNode | null
 	child: FiberNode | null
 	index: number
 	ref: Ref
 
+	// 作为动态的工作单元的属性
 	pendingProps: Props
 	memoizedProps: Props | null
 	memoizedState: any
+	// 指向该fiber在另一次更新时对应的fiber
 	alternate: FiberNode | null
 	flags: Flags
 	updateQueue: unknown
 	// 代表子树中包含的flags
 	subtreeFlags: Flags
-
 	deletions: FiberNode[] | null
 
 	constructor(tag: WorkTag, pendingProps: Props, key: Key) {
 		this.tag = tag
-		this.key = key
+		this.key = key || null
 		// HostCompoennt
 		this.stateNode = null
 		// 类型就是div dom
@@ -114,5 +121,10 @@ export function createFiberFromElement(element: ReactElementType) {
 	}
 	const fiber = new FiberNode(fiberTag, props, key)
 	fiber.type = type
+	return fiber
+}
+
+export function createFiberFromFragment(elements: any[], key: Key): FiberNode {
+	const fiber = new FiberNode(Fragment, elements, key)
 	return fiber
 }

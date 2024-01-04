@@ -3,7 +3,7 @@
 import { ReactElementType } from 'shared/ReactType'
 import { FiberNode } from './fiber'
 import { UpdateQueue, processUpdateQueue } from './updateQueue'
-import { FunctionComponent, HostComponent, HostRoot, HostText } from './workTag'
+import { Fragment, FunctionComponent, HostComponent, HostRoot, HostText } from './workTag'
 import { mountChildFibers, reconcileChildFibers } from './childFibers'
 import { renderWithHooks } from './fiberHooks'
 
@@ -21,6 +21,10 @@ export const beginWork = (wip: FiberNode) => {
 
 		case FunctionComponent:
 			return updateFunctionComponent(wip)
+		
+		
+		case Fragment:
+		return updateFragment(wip)
 
 		default:
 			if (__DEV__) {
@@ -29,6 +33,13 @@ export const beginWork = (wip: FiberNode) => {
 			break
 	}
 	return null
+}
+
+function updateFragment(wip: FiberNode) {
+	const nextChildren = wip.pendingProps
+
+	reconileChildren(wip, nextChildren)
+	return wip.child
 }
 
 function updateFunctionComponent(wip: FiberNode) {
