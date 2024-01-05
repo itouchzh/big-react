@@ -1,7 +1,7 @@
 import { Action } from 'shared/ReactType'
 
 export interface Dispatcher {
-	useState: <T>(inititalState: () => T | T) => [T, Dispatch<T>],
+	useState: <T>(inititalState: () => T | T) => [T, Dispatch<T>]
 	useEffect: (callback: () => void | void, deps: any[]) => void
 }
 // Action可以为状态或者为改变状态的函数

@@ -36,7 +36,7 @@ let workInProgress: FiberNode | null = null
 
 let wipRootRenderLane: Lane = NoLane
 
-let rootDoesHasPassiveEffects: Boolean = false
+let rootDoesHasPassiveEffects: boolean = false
 
 //  初始化
 function prepareFreshStack(root: FiberRootNode, lane: Lane) {
