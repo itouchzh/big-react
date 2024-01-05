@@ -4,6 +4,7 @@ import { Flags, NoFlags } from './fiberFlags'
 import { Container } from 'hostConfig'
 import { Lane, Lanes, NoLane, NoLanes } from './fiberLanes'
 import { Effect } from './fiberHooks'
+import { CallbackNode } from 'scheduler'
 export class FiberNode {
 	// 作为静态数据结构的属性
 	// 对于 FunctionComponent，指函数本身，对于ClassComponent，指class，对于HostComponent，指DOM节点tagName
@@ -85,6 +86,9 @@ export class FiberRootNode {
 
 	pendingPassiveEffects: PendingPassiveEffects
 
+	callbackNode: CallbackNode | null
+	callbackPriority: Lane
+
 	constructor(container: Container, hostRootFiber: FiberNode) {
 		this.container = container
 		this.current = hostRootFiber
@@ -96,6 +100,8 @@ export class FiberRootNode {
 			unmount: [],
 			update: []
 		}
+		this.callbackNode = null
+		this.callbackPriority = NoLane
 	}
 }
 

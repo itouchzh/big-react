@@ -69,9 +69,9 @@ let curCallback: CallbackNode | null = null
 
 function schedule() {
 	const cbNode = getFirstCallbackNode()
-    const curWork = workList.sort((w1, w2) => w1.priority - w2.priority)[0]
-    
-    // 没有工作了取消
+	const curWork = workList.sort((w1, w2) => w1.priority - w2.priority)[0]
+
+	// 没有工作了取消
 	if (!curWork) {
 		curCallback = null
 		cbNode && cancelCallback(cbNode)
@@ -82,7 +82,6 @@ function schedule() {
 	if (curPriority === prevPriority) {
 		return
 	}
-	
 
 	// 更高优先级, 取消之前的
 	cbNode && cancelCallback(cbNode)
@@ -107,8 +106,8 @@ function perform(work: Work, didTimeout?: boolean) {
 	prevPriority = work.priority
 	if (!work.count) {
 		const workIndex = workList.indexOf(work)
-        workList.splice(workIndex, 1)
-        prevPriority = IdlePriority
+		workList.splice(workIndex, 1)
+		prevPriority = IdlePriority
 	}
 	const prevCallback = curCallback
 	schedule()
