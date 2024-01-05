@@ -141,8 +141,7 @@ export function ChildReconciler(shouldTrackEffects: boolean) {
 		let lastPlacedIndex: number = 0
 		let lastNewFiber: FiberNode | null = null
 		let firstNewFiber: FiberNode | null = null
-		// 将current保存在map中,current 为更新前
-
+		// 将current保存在map中,current 为更新前，也就是旧的节点
 		const existingChildren: ExistingChildren = new Map()
 
 		let current = currentFirstChild
@@ -317,9 +316,9 @@ export function ChildReconciler(shouldTrackEffects: boolean) {
 	}
 }
 
+// 可以复用
 function useFiber(fiber: FiberNode, pendingProps: Props): FiberNode {
 	const clone = createWorkInProgress(fiber, pendingProps)
-
 	clone.index = 0
 	clone.sibling = null
 	return clone

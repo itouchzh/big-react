@@ -3,6 +3,7 @@ import { Fragment, FunctionComponent, HostComponent, WorkTag } from './workTag'
 import { Flags, NoFlags } from './fiberFlags'
 import { Container } from 'hostConfig'
 import { Lane, Lanes, NoLane, NoLanes } from './fiberLanes'
+import { Effect } from './fiberHooks'
 export class FiberNode {
 	// 作为静态数据结构的属性
 	// 对于 FunctionComponent，指函数本身，对于ClassComponent，指class，对于HostComponent，指DOM节点tagName
@@ -23,8 +24,9 @@ export class FiberNode {
 	// 作为动态的工作单元的属性
 	pendingProps: Props
 	memoizedProps: Props | null
+	// 保存的是hooks的链表
 	memoizedState: any
-	// 指向该fiber在另一次更新时对应的fiber
+	// 指向该fiber在另一次更新时对应的fiber， 双缓存机制
 	alternate: FiberNode | null
 	flags: Flags
 	updateQueue: unknown
@@ -65,16 +67,23 @@ export class FiberNode {
 	}
 }
 
+export interface PendingPassiveEffects {
+	unmount: Effect[]
+	update: Effect[]
+}
+
 // 创建根节点
 export class FiberRootNode {
 	// 保存rootElement
 	container: Container
 	current: FiberNode
 	// 递归完成以后的hostRootFiber
-	finishedWork: FiberNode | null;
+	finishedWork: FiberNode | null
 
-	pendingLanes: Lanes;
-	finishedLane:Lane
+	pendingLanes: Lanes
+	finishedLane: Lane
+
+	pendingPassiveEffects: PendingPassiveEffects
 
 	constructor(container: Container, hostRootFiber: FiberNode) {
 		this.container = container
@@ -83,6 +92,10 @@ export class FiberRootNode {
 		this.finishedWork = null
 		this.pendingLanes = NoLanes
 		this.finishedLane = NoLane
+		this.pendingPassiveEffects = {
+			unmount: [],
+			update: []
+		}
 	}
 }
 

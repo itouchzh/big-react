@@ -32,7 +32,7 @@ export const updateContainer = (
 		hostRootFiber.updateQueue as UpdateQueue<ReactElementType | null>,
 		update
 	)
-	scheduleUpdateOnFiber(hostRootFiber,lane)
+	scheduleUpdateOnFiber(hostRootFiber, lane)
 	return element
 }
 
