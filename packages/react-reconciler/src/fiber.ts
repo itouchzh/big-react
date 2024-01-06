@@ -50,7 +50,7 @@ export class FiberNode {
 		this.child = null
 		// 如果有好几个兄弟，那么这个是第几个
 		this.index = 0
-		this.ref = null
+		this.ref = { current: null }
 
 		// 构成工作单元
 		this.pendingProps = pendingProps
@@ -135,7 +135,7 @@ export const createWorkInProgress = (
 }
 
 export function createFiberFromElement(element: ReactElementType) {
-	const { type, key, props } = element
+	const { type, key, props, ref } = element
 	let fiberTag: WorkTag = FunctionComponent
 
 	if (typeof type === 'string') {
@@ -146,6 +146,7 @@ export function createFiberFromElement(element: ReactElementType) {
 	}
 	const fiber = new FiberNode(fiberTag, props, key)
 	fiber.type = type
+	fiber.ref = ref
 	return fiber
 }
 

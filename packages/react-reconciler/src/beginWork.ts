@@ -13,6 +13,7 @@ import {
 import { mountChildFibers, reconcileChildFibers } from './childFibers'
 import { renderWithHooks } from './fiberHooks'
 import { Lane } from './fiberLanes'
+import { Ref } from './fiberFlags'
 
 // 递归的递 阶段
 export const beginWork = (wip: FiberNode, renderLane: Lane) => {
@@ -71,6 +72,7 @@ function updateHostRoot(wip: FiberNode, renderLane: Lane) {
 function updateHostComponent(wip: FiberNode) {
 	const nextProps = wip.pendingProps
 	const nextChildren = nextProps.children
+	markRef(wip.alternate, wip)
 	reconileChildren(wip, nextChildren)
 	return wip.child
 }
@@ -84,5 +86,16 @@ function reconileChildren(wip: FiberNode, children?: ReactElementType) {
 	} else {
 		// mounted
 		wip.child = mountChildFibers(wip, null, children)
+	}
+}
+
+function markRef(current: FiberNode | null, workInProgressHook: FiberNode) {
+	const ref = workInProgressHook?.ref
+	// current === null ,对应的是mount阶段 
+	if (
+		(current === null && ref !== null) ||
+		(current !== null && current.ref !== ref)
+	) {
+		workInProgressHook.flags |= Ref
 	}
 }

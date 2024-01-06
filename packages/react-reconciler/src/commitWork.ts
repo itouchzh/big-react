@@ -10,11 +10,13 @@ import { FiberNode, FiberRootNode, PendingPassiveEffects } from './fiber'
 import {
 	ChildDeletion,
 	Flags,
+	LayoutMask,
 	MutationMask,
 	NoFlags,
 	PassiveEffect,
 	PassiveMask,
 	Placement,
+	Ref,
 	Update
 } from './fiberFlags'
 import { FunctionComponent, HostComponent, HostRoot, HostText } from './workTag'
@@ -22,34 +24,31 @@ import { Effect, FCUpdateQueue } from './fiberHooks'
 import { HookHasEffect } from './hookEffectTags'
 
 let nextEffect: FiberNode | null = null
-export function commitMutationEffects(
-	finishedWork: FiberNode,
-	root: FiberRootNode
+
+export function commitEffects(
+	phrase: 'mutation' | 'layout',
+	mask: Flags,
+	callback: (fiber: FiberNode, root: FiberRootNode) => void
 ) {
-	nextEffect = finishedWork
+	return (finishedWork: FiberNode, root: FiberRootNode) => {
+		nextEffect = finishedWork
+		while (nextEffect !== null) {
+			// 向下遍历
+			const child: FiberNode | null = nextEffect.child
 
-	while (nextEffect !== null) {
-		// 向下遍历
-		const child: FiberNode | null = nextEffect.child
-
-		if (
-			(nextEffect.subtreeFlags & (MutationMask | PassiveMask)) !== NoFlags &&
-			child !== null
-		) {
-			nextEffect = child
-		} else {
-			// 向上遍历 DFS
-			up: while (nextEffect !== null) {
-				commitMutationEffectsOnFiber(nextEffect, root)
-
-				const sibling: FiberNode | null = nextEffect.sibling
-
-				if (sibling !== null) {
-					nextEffect = sibling
-					break up
+			if ((nextEffect.subtreeFlags & mask) !== NoFlags && child !== null) {
+				nextEffect = child
+			} else {
+				// 向上遍历 DFS
+				up: while (nextEffect !== null) {
+					callback(nextEffect, root)
+					const sibling: FiberNode | null = nextEffect.sibling
+					if (sibling !== null) {
+						nextEffect = sibling
+						break up
+					}
+					nextEffect = nextEffect.return
 				}
-
-				nextEffect = nextEffect.return
 			}
 		}
 	}
@@ -59,7 +58,7 @@ const commitMutationEffectsOnFiber = (
 	finishedWork: FiberNode,
 	root: FiberRootNode
 ) => {
-	const flags = finishedWork.flags
+	const { flags, tag } = finishedWork
 	if ((flags & Placement) !== NoFlags) {
 		commitPlacement(finishedWork)
 		// 从flags中移除Placement
@@ -91,7 +90,56 @@ const commitMutationEffectsOnFiber = (
 		commitPassiveEffect(finishedWork, root, 'update')
 		finishedWork.flags &= ~PassiveEffect
 	}
+	if ((flags & Ref) !== NoFlags && tag === HostComponent) {
+		safelyDetachRef(finishedWork)
+	}
 }
+function safelyDetachRef(current: FiberNode) {
+	const ref = current.ref
+	if (ref !== null) {
+		if (typeof ref === 'function') {
+			ref(null)
+		} else {
+			ref.current = null
+		}
+	}
+}
+
+const commitLayoutEffectsOnFiber = (
+	finishedWork: FiberNode,
+	root: FiberRootNode
+) => {
+	const { flags, tag } = finishedWork
+
+	if ((flags & Ref) !== NoFlags && tag === HostComponent) {
+		// 绑定新的ref
+		safelyAttachRef(finishedWork)
+		finishedWork.flags &= ~Ref
+	}
+}
+function safelyAttachRef(fiber: FiberNode) {
+	const ref = fiber.ref
+	if (ref !== null) {
+		const instance = fiber.stateNode
+		if (typeof ref === 'function') {
+			ref(instance)
+		} else {
+			ref.current = instance
+		}
+	}
+}
+
+export const commitMutationEffects = commitEffects(
+	'mutation',
+	MutationMask | PassiveMask,
+	commitMutationEffectsOnFiber
+)
+
+export const commitLayoutEffects = commitEffects(
+	'layout',
+	LayoutMask,
+	commitLayoutEffectsOnFiber
+)
 
 function commitPassiveEffect(
 	fiber: FiberNode,
@@ -187,6 +235,7 @@ function commitDeletion(childToDelete: FiberNode, root: FiberRootNode) {
 		switch (unmountFiber.tag) {
 			case HostComponent:
 				recordHostChildrenToDelete(rootChildrenToDelete, unmountFiber)
+				safelyDetachRef(unmountFiber)
 				return
 			case HostText:
 				recordHostChildrenToDelete(rootChildrenToDelete, unmountFiber)
@@ -258,7 +307,12 @@ const commitPlacement = (finishedWork: FiberNode) => {
 		insertOrAppendPlacementNodeIntoContainer(finishedWork, hostParent, sibling)
 	}
 }
-
+/**
+ * 难点在于目标fiber的hostSibling可能并不是他的同级sibling
+ * 比如： <A/><B/> 其中：function B() {return <div/>} 所以A的hostSibling实际是B的child
+ * 实际情况层级可能更深
+ * 同时：一个fiber被标记Placement，那他就是不稳定的（他对应的DOM在本次commit阶段会移动），也不能作为hostSibling
+ */
 function getHostSibling(fiber: FiberNode) {
 	let node: FiberNode = fiber
 	findSibling: while (true) {

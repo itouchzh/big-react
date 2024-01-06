@@ -12,12 +12,16 @@ import {
 	HostRoot,
 	HostText
 } from './workTag'
-import { NoFlags, Update } from './fiberFlags'
-import { updateFiberProps } from 'react-dom/src/SyntheticEvent'
+import { NoFlags, Ref, Update } from './fiberFlags'
+// import { updateFiberProps } from 'react-dom/src/SyntheticEvent'
 
 // 标记更新
 function markUpdate(fiber: FiberNode) {
 	fiber.flags |= Update
+}
+
+function markRef(fiber: FiberNode) {
+	fiber.flags |= Ref
 }
 
 // 递归的归
@@ -32,7 +36,11 @@ export const completeWork = (wip: FiberNode) => {
 				// update
 				// props 是否变化
 				// 变了 Update flag
-				updateFiberProps(wip.stateNode, newProps)
+				markUpdate(wip)
+				// updateFiberProps(wip.stateNode, newProps)
+				if (current.ref !== wip.ref) {
+					markRef(wip)
+				}
 			} else {
 				// mount
 				// 1. 构建dom树
@@ -41,6 +49,10 @@ export const completeWork = (wip: FiberNode) => {
 				appendAllChildren(instance, wip)
 
 				wip.stateNode = instance
+				// 标记Ref
+				if (wip.ref !== null) {
+					markRef(wip)
+				}
 			}
 			bubbleProperties(wip)
 			break
