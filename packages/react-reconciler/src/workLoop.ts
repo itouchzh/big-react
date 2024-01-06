@@ -92,6 +92,9 @@ function ensureRootIsScheduled(root: FiberRootNode) {
 		scheduleSyncCallback(performSyncWorkOnRoot.bind(null, root))
 		scheduleMicroTask(flushSyncCallbacks)
 	} else {
+		if (__DEV__) {
+			console.log('在微任务中调度，优先级', updateLane)
+		}
 		// 其他优先级 用宏任务调度
 		const schedulerPriority = lanesToSchedulePriority(updateLane)
 
