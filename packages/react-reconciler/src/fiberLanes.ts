@@ -11,6 +11,7 @@ import ReactCurrentBatchConfig from 'react/src/currentBatchConfig'
 export type Lane = number
 export type Lanes = number
 
+// 数字越小，优先级越高
 export const SyncLane = 0b00001
 
 export const NoLane = 0b00000
@@ -41,6 +42,7 @@ export function requestUpdateLanes() {
  * @returns 返回优先级最高的lane
  */
 export function getHighestPriorityLane(lanes: Lanes): Lane {
+	// 可以获取所有比特位中最右边的1
 	return lanes & -lanes
 }
 

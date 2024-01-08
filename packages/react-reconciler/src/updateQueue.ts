@@ -6,10 +6,15 @@ import { Lane, NoLane, isSubsetOfLanes } from './fiberLanes'
 export interface Update<State> {
 	action: Action<State>
 	lane: Lane
+	// 指向链表中的下一个, 由于UpdateQueue是一个环形链表, 最后一个update.next指向第一个update对象
 	next: Update<any> | null
 }
 
+// 一个环形链表
 export interface UpdateQueue<State> {
+	// baseState: State,
+	// firstBaseUpdate: Update<State> | null,
+	// lastBaseUpdate: Update<State> | null,
 	shared: {
 		pending: Update<State> | null
 	}

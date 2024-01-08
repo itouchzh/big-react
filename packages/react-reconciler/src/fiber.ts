@@ -11,7 +11,9 @@ export class FiberNode {
 	type: any
 	tag: WorkTag
 	key: Key
-	// Fiber对应的真实DOM节点
+	// 与fiber关联的局部状态节点(比如: HostComponent类型指向与fiber节点对应的 dom 节点;
+	// 根节点fiber.stateNode指向的是FiberRoot;
+	// class 类型节点其stateNode指向的是 class 实例).
 	stateNode: any
 
 	// 用于连接其他Fiber节点形成Fiber树
@@ -24,10 +26,14 @@ export class FiberNode {
 
 	// 作为动态的工作单元的属性
 	pendingProps: Props
+	//上一次生成子节点时用到的属性, 生成子节点之后保持在内存中. 向下生成子节点之前叫做pendingProps,
+	//生成子节点之后会把pendingProps赋值给memoizedProps用于下一次比较.
+	//pendingProps和memoizedProps比较可以得出属性是否变动.
 	memoizedProps: Props | null
-	// 保存的是hooks的链表
+	// 保存的是hooks的链表,指向fiber节点的内存状态. 在function类型的组件中, fiber.memoizedState就指向Hook队列
 	memoizedState: any
 	// 指向该fiber在另一次更新时对应的fiber， 双缓存机制
+	// 每个被更新过 fiber 节点在内存中都是成对出现(current 和 workInProgress)
 	alternate: FiberNode | null
 	flags: Flags
 	updateQueue: unknown

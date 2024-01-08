@@ -47,10 +47,12 @@ const RootInComplete = 1
 const RootCompleted = 2
 // TODO 执行过程中报错了
 
-//  初始化
+//  重置 FiberRoot上的全局属性 和 `fiber树构造`循环过程中的全局变量
 function prepareFreshStack(root: FiberRootNode, lane: Lane) {
+	// 重置FiberRoot对象上的属性
 	root.finishedLane = NoLane
 	root.finishedWork = null
+	// 重置全局变量
 	workInProgress = createWorkInProgress(root.current, {})
 	wipRootRenderLane = lane
 }
@@ -60,12 +62,15 @@ export function scheduleUpdateOnFiber(fiber: FiberNode, lane: Lane) {
 	// 调度
 	const root = markUpdateFromFiberToRoot(fiber)
 	markRootUpdated(root, lane)
+	// 对比更新
 	ensureRootIsScheduled(root)
 }
 // 调度阶段入口
 function ensureRootIsScheduled(root: FiberRootNode) {
+	// 前半部分: 判断是否需要注册新的调度任务
 	const updateLane = getHighestPriorityLane(root.pendingLanes)
 	const existingCallback = root.callbackNode
+	// 如果没有待处理的更新，取消已存在的回调
 	if (updateLane === NoLane) {
 		if (existingCallback !== null) {
 			unstable_cancelCallback(existingCallback)
@@ -77,19 +82,23 @@ function ensureRootIsScheduled(root: FiberRootNode) {
 	const curPriority = updateLane
 	const prevPriority = root.callbackPriority
 
+	// 优先级相同则返回
 	if (curPriority === prevPriority) {
 		return
 	}
-
+	// 中断上一个执行
 	if (existingCallback !== null) {
 		unstable_cancelCallback(existingCallback)
 	}
+
+	// 后半部分: 注册调度任务
 	let newCallbackNode = null
 	if (updateLane === SyncLane) {
 		// 同步优先级，微任务调度
 		if (__DEV__) {
-			console.log('在微任务中调度，优先级', updateLane)
+			console.log('在微任务中调度，同步优先级', updateLane)
 		}
+		// 任务已经过期，需要同步执行render阶段
 		scheduleSyncCallback(performSyncWorkOnRoot.bind(null, root))
 		scheduleMicroTask(flushSyncCallbacks)
 	} else {
@@ -98,7 +107,8 @@ function ensureRootIsScheduled(root: FiberRootNode) {
 		}
 		// 其他优先级 用宏任务调度
 		const schedulerPriority = lanesToSchedulePriority(updateLane)
-
+		// 根据任务优先级异步执行render阶段,
+		// newCallbackNode保存当前的回调节点，即使被中断也会被保存上，当恢复了以后，就可以从这里重新开始了
 		newCallbackNode = scheduleCallback(
 			schedulerPriority,
 			// @ts-ignore
@@ -112,17 +122,27 @@ function markRootUpdated(root: FiberRootNode, lane: Lane) {
 	root.pendingLanes = mergeLanes(root.pendingLanes, lane)
 }
 
+/**
+ * @description 找到根节点
+ * @param fiber
+ * @returns
+ */
 function markUpdateFromFiberToRoot(fiber: FiberNode) {
-	let node = fiber
+	let node = fiber // 从给定的 Fiber 节点开始
 	let parent = node.return
+
+	// 通过遍历父节点，一直追溯到根节点
 	while (parent !== null) {
 		node = parent
 		parent = node.return
 	}
+
+	// 如果最终追溯到的节点的类型是 HostRoot，则返回该节点的 stateNode（根节点实际的 DOM 节点）
 	if (node.tag === HostRoot) {
 		return node.stateNode
 	}
 
+	// 如果追溯到的节点不是 HostRoot，则返回 null，表示没有找到根节点
 	return null
 }
 
@@ -135,10 +155,11 @@ function performSyncWorkOnRoot(root: FiberRootNode) {
 		ensureRootIsScheduled(root)
 		return
 	}
-
+	// 构造fiber树
 	const exitStatus = renderRoot(root, nextLane, false)
 
 	if (exitStatus === RootCompleted) {
+		// 3. 输出: 渲染fiber树
 		const finishedWork = root.current.alternate
 		root.finishedWork = finishedWork
 		root.finishedLane = nextLane
@@ -157,32 +178,35 @@ function performConcurrentWorkOnRoot(
 ): any {
 	// 保证useEffect回调执行
 	const curCallback = root.callbackNode
+	// 1. 刷新pending状态的effects, 有可能某些effect会取消本次任务
 	const didFlushPassiveEffect = flushPassiveEffects(root.pendingPassiveEffects)
 	if (didFlushPassiveEffect) {
 		if (root.callbackNode !== curCallback) {
 			return null
 		}
 	}
-
+	// 2. 获取本次渲染的优先级
 	const lane = getHighestPriorityLane(root.pendingLanes)
 	const curCallbackNode = root.callbackNode
 	if (lane === NoLane) {
 		return null
 	}
 	const needSync = lane === SyncLane || didTimeout
-	// render阶段
+	// render阶段，  // 3. 构造fiber树
 	const exitStatus = renderRoot(root, lane, !needSync)
 
 	ensureRootIsScheduled(root)
 
 	if (exitStatus === RootInComplete) {
-		// 中断
+		// 中断 如果当前执行的 scheduler task 已经发生了变化或者被取消了，返回 null
 		if (root.callbackNode !== curCallbackNode) {
 			return null
 		}
+		// 渲染被阻断, 返回一个新的performConcurrentWorkOnRoot函数, 等待下一次调用
 		return performConcurrentWorkOnRoot.bind(null, root)
 	}
 	if (exitStatus === RootCompleted) {
+		// 将最新的fiber树挂载到root.finishedWork节点上
 		const finishedWork = root.current.alternate
 		root.finishedWork = finishedWork
 		root.finishedLane = lane
@@ -270,9 +294,11 @@ function commitRoot(root: FiberRootNode) {
 	if (subtreeHasEffect || rootHasEffect) {
 		// beforeMutation
 		// mutation placement
+		//dom 变更, 界面得到更新. 主要处理副作用队列中带有Placement, Update, Deletion, Hydrating标记的fiber节点.
 		commitMutationEffects(finishedWork, root)
 		root.current = finishedWork
 		// layout
+		// dom 变更后, 主要处理副作用队列中带有Update | Callback标记的fiber节点.
 		commitLayoutEffects(finishedWork, root)
 	} else {
 		root.current = finishedWork
@@ -312,13 +338,15 @@ function workLoopSync() {
 }
 
 function workLoopConcurrent() {
+	// 循环遍历 current fiber tree 直到剩余执行时间不足
 	while (workInProgress !== null && !unstable_shouldYield()) {
 		performUnitOfWork(workInProgress)
 	}
 }
 
 function performUnitOfWork(fiber: FiberNode) {
-	// next 可能是子fiberNode，也可能是null，如果是子fiberNode，则继续递归
+	// next 可能是子fiberNode，也可能是null，如果是子fiberNode，则继续递归,
+	// next 是执行beginWork返回的下一个需要处理的Fiber节点
 	const next = beginWork(fiber, wipRootRenderLane)
 	// 开始工作完，那么memoizedProps就是pendingProps
 	fiber.memoizedProps = fiber.pendingProps

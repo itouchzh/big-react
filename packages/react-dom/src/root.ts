@@ -9,6 +9,7 @@ import { Container } from './hostConfig'
 import { ReactElementType } from 'shared/ReactType'
 
 export function createRoot(container: Container) {
+	// 1. 创建fiberRoot
 	const root = createContainer(container)
 
 	return {

@@ -27,8 +27,10 @@ let currentHook: Hook | null = null
 const { currentDispatcher } = internals
 
 interface Hook {
+	// 保存hook对应的state
 	memoizedState: any
 	updateQueue: unknown
+	// 与下一个Hook连接形成单向无环链表
 	next: Hook | null
 	baseState: any
 	baseQueue: Update<any> | null
@@ -343,7 +345,7 @@ function dispatchSetState<State>(
 	const update = createUpdate(action, lane)
 
 	enqueueUpdate(updateQueue, update)
-
+	// 3. 请求调度, 进入reconciler运作流程中的`输入`环节.
 	scheduleUpdateOnFiber(fiber, lane)
 }
 

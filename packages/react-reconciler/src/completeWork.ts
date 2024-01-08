@@ -28,7 +28,6 @@ function markRef(fiber: FiberNode) {
 export const completeWork = (wip: FiberNode) => {
 	const newProps = wip.pendingProps
 	const current = wip.alternate
-
 	switch (wip.tag) {
 		case HostComponent:
 			// 构建一棵离屏dom树
